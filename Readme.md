@@ -34,3 +34,11 @@ URI("schema://user:password@host:80/path?query=true#fragment")
 URI("tel:+123")
 # => URI("tel","","","",0,"+123","","")
 ```
+
+### @uri_str(str::String)
+
+Importing this macro enables Julia's special string syntax
+
+```julia
+uri"http://google.com"
+```
