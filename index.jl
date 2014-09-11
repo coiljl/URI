@@ -1,5 +1,5 @@
 import Base: string, isvalid, ==
-export URI
+export URI, @uri_str
 
 const regex = r"""
   (?:([A-Za-z-+\.]+):)? # protocol
@@ -63,14 +63,15 @@ string(u::URI) = begin
     u.fragment == "" ? "" : "#$(u.fragment)")
 end
 
-# Validate known URI formats
-
 const uses_authority = ["hdfs", "ftp", "http", "gopher", "nntp", "telnet", "imap", "wais", "file", "mms", "https", "shttp", "snews", "prospero", "rtsp", "rtspu", "rsync", "svn", "svn+ssh", "sftp" ,"nfs", "git", "git+ssh", "ldap"]
 const uses_params = ["ftp", "hdl", "prospero", "http", "imap", "https", "shttp", "rtsp", "rtspu", "sip", "sips", "mms", "sftp", "tel"]
 const non_hierarchical = ["gopher", "hdl", "mailto", "news", "telnet", "wais", "imap", "snews", "sip", "sips"]
 const uses_query = ["http", "wais", "imap", "https", "shttp", "mms", "gopher", "rtsp", "rtspu", "sip", "sips", "ldap"]
 const uses_fragment = ["hdfs", "ftp", "hdl", "http", "gopher", "news", "nntp", "wais", "https", "shttp", "snews", "file", "prospero"]
 
+##
+# Validate known URI formats
+#
 function isvalid(uri::URI)
   s = uri.schema
   @assert !isempty(s) "can not validate a relative URI"
@@ -79,4 +80,11 @@ function isvalid(uri::URI)
   s in uses_fragment || isempty(uri.fragment) || return false           # fragment identifier component not allowed
   s in uses_authority && return true
   isempty(uri.host) && uri.port == 0  && isempty(uri.username)          # authority component not allowed
+end
+
+##
+# Enables shorthand syntax `uri"mailto:pretty@julia"`
+#
+macro uri_str(str::String)
+  URI(str)
 end

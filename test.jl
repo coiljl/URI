@@ -29,5 +29,6 @@ end
 @test !isvalid(URI("file:///path/to/file/with?should=work#fine"))
 @test  isvalid(URI("file:///path/to/file/with%3fshould%3dwork%23fine"))
 
-@test ==(URI("//google.com"),
-         URI("", "", "", "google,com", 0, "", "", ""))
+@test URI("//google.com") == URI("", "", "", "google.com", 0, "", "", "")
+
+@test uri"//google.com" == URI("", "", "", "google.com", 0, "", "", "")
