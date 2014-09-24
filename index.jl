@@ -1,5 +1,6 @@
+@require "querystring" Query
 import Base: string, isvalid, ==
-export URI, @uri_str
+export URI, @uri_str, Query
 
 const regex = r"""
   (?:([A-Za-z-+\.]+):)? # protocol
@@ -18,30 +19,30 @@ const regex = r"""
 """x
 
 type URI
-  schema::UTF8String
-  username::UTF8String
-  password::UTF8String
-  host::UTF8String
+  schema::String
+  username::String
+  password::String
+  host::String
   port::Int
-  path::UTF8String
-  query::UTF8String
-  fragment::UTF8String
+  path::String
+  query::Query
+  fragment::String
 end
 
 URI(uri::String) = begin
   m = match(regex, uri).captures
   URI(
-    m[1] === nothing ? "" : m[1],     # schema
-    m[2] === nothing ? "" : m[2],     # username
-    m[3] === nothing ? "" : m[3],     # password
-    m[4] === nothing ? "" : m[4],     # host
-    m[5] === nothing ? 0 : int(m[5]), # port
-    m[6] === nothing ? "" : m[6],     # path
-    m[7] === nothing ? "" : m[7],     # query
-    m[8] === nothing ? "" : m[8])     # fragment
+    m[1] === nothing ? "" : m[1],             # schema
+    m[2] === nothing ? "" : m[2],             # username
+    m[3] === nothing ? "" : m[3],             # password
+    m[4] === nothing ? "" : m[4],             # host
+    m[5] === nothing ? 0 : int(m[5]),         # port
+    m[6] === nothing ? "" : m[6],             # path
+    m[7] === nothing ? Query() : Query(m[7]), # query
+    m[8] === nothing ? "" : m[8])             # fragment
 end
 
-==(a::URI, b::URI) = begin
+function ==(a::URI, b::URI)
   a.schema == b.schema &&
   a.username == b.username &&
   a.password == b.password &&
@@ -52,14 +53,14 @@ end
   a.fragment == b.fragment
 end
 
-string(u::URI) = begin
+function string(u::URI)
   string(
     isempty(u.schema) ? "" : u.schema * ((isempty(u.username) && isempty(u.host)) ? ":" : "://"),
     u.username == "" ? "" : u.username * (u.password == "" ? "" : ":$(u.password)") * "@",
     u.host,
     u.port == 0 ? "" : ":$(u.port)",
     u.path,
-    u.query == "" ? "" : "?$(u.query)",
+    reduce((s,a)->"$s$(a[1])=$(a[2])&", "?", u.query)[1:end-1],
     u.fragment == "" ? "" : "#$(u.fragment)")
 end
 

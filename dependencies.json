@@ -1,5 +1,8 @@
 {
   "development": {
     "jest": "http://github.com/jkroso/jest/tarball/master"
+  },
+  "production": {
+    "querystring": "http://github.com/jkroso/querystring/tarball/0.0.1"
   }
 }
