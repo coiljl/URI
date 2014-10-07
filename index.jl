@@ -1,5 +1,5 @@
 @require "querystring" Query
-import Base: string, isvalid, ==
+import Base: string, isvalid, ==, show
 export URI, @uri_str, Query
 
 const regex = r"""
@@ -53,15 +53,23 @@ function ==(a::URI, b::URI)
   a.fragment == b.fragment
 end
 
-function string(u::URI)
-  string(
-    isempty(u.schema) ? "" : u.schema * ((isempty(u.username) && isempty(u.host)) ? ":" : "://"),
-    u.username == "" ? "" : u.username * (u.password == "" ? "" : ":$(u.password)") * "@",
-    u.host,
-    u.port == 0 ? "" : ":$(u.port)",
-    u.path,
-    reduce((s,a)->"$s$(a[1])=$(a[2])&", "?", u.query)[1:end-1],
-    u.fragment == "" ? "" : "#$(u.fragment)")
+string(uri::URI) = sprint(show, uri)[5:end-1]
+
+function show(io::IO, u::URI)
+  write(io, "uri\"")
+  isempty(u.schema) || write(io, u.schema, ':')
+  isempty(u.username * u.host) || write(io,  "//")
+  if !isempty(u.username)
+    write(io, u.username)
+    isempty(u.password) || write(io, ':', u.password)
+    write(io, '@')
+  end
+  write(io, u.host)
+  u.port == 0 || write(io, ':', string(u.port))
+  write(io, u.path)
+  write(io, reduce((s,a)->"$s$(a[1])=$(a[2])&", "?", u.query)[1:end-1])
+  isempty(u.fragment) || write(io, '#', u.fragment)
+  write(io, "\"")
 end
 
 const uses_authority = ["hdfs", "ftp", "http", "gopher", "nntp", "telnet", "imap", "wais", "file", "mms", "https", "shttp", "snews", "prospero", "rtsp", "rtspu", "rsync", "svn", "svn+ssh", "sftp" ,"nfs", "git", "git+ssh", "ldap"]
