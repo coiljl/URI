@@ -1,5 +1,5 @@
 @require "querystring" Query
-import Base: string, isvalid, ==, show
+import Base: string, isvalid, ==, show, print
 export URI, @uri_str, Query
 
 const regex = r"""
@@ -53,10 +53,15 @@ function ==(a::URI, b::URI)
   a.fragment == b.fragment
 end
 
-string(uri::URI) = sprint(show, uri)[5:end-1]
+string(uri::URI) = sprint(print, uri)
 
 function show(io::IO, u::URI)
   write(io, "uri\"")
+  print(io, u)
+  write(io, '"')
+end
+
+function print(io::IO, u::URI)
   isempty(u.schema) || write(io, u.schema, ':')
   isempty(u.username * u.host) || write(io,  "//")
   if !isempty(u.username)
@@ -69,7 +74,6 @@ function show(io::IO, u::URI)
   write(io, u.path)
   write(io, reduce((s,a)->"$s$(a[1])=$(a[2])&", "?", u.query)[1:end-1])
   isempty(u.fragment) || write(io, '#', u.fragment)
-  write(io, "\"")
 end
 
 const uses_authority = ["hdfs", "ftp", "http", "gopher", "nntp", "telnet", "imap", "wais", "file", "mms", "https", "shttp", "snews", "prospero", "rtsp", "rtspu", "rsync", "svn", "svn+ssh", "sftp" ,"nfs", "git", "git+ssh", "ldap"]
