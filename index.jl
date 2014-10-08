@@ -1,5 +1,5 @@
 @require "querystring" Query
-import Base: string, isvalid, ==, show, print
+import Base: isvalid, ==, show, print
 export URI, @uri_str, Query
 
 const regex = r"""
@@ -23,7 +23,7 @@ type URI
   username::String
   password::String
   host::String
-  port::Int
+  port::Integer
   path::String
   query::Query
   fragment::String
@@ -52,8 +52,6 @@ function ==(a::URI, b::URI)
   a.query == b.query &&
   a.fragment == b.fragment
 end
-
-string(uri::URI) = sprint(print, uri)
 
 function show(io::IO, u::URI)
   write(io, "uri\"")
