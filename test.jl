@@ -1,4 +1,4 @@
-@require "."
+@require "." URI @uri_str Query
 
 for url in [
   "hdfs://user:password@hdfshost:9000/root/folder/file.csv#frag",

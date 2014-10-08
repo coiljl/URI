@@ -1,6 +1,4 @@
 @require "querystring" Query
-import Base: isvalid, ==, show, print
-export URI, @uri_str, Query
 
 const regex = r"""
   (?:([A-Za-z-+\.]+):)? # protocol
@@ -36,13 +34,13 @@ URI(uri::String) = begin
     m[2] === nothing ? "" : m[2],             # username
     m[3] === nothing ? "" : m[3],             # password
     m[4] === nothing ? "" : m[4],             # host
-    m[5] === nothing ? 0 : int(m[5]),         # port
+    m[5] === nothing ? 0 : uint16(m[5]),      # port
     m[6] === nothing ? "" : m[6],             # path
     m[7] === nothing ? Query() : Query(m[7]), # query
     m[8] === nothing ? "" : m[8])             # fragment
 end
 
-function ==(a::URI, b::URI)
+function Base.(:(==))(a::URI, b::URI)
   a.schema == b.schema &&
   a.username == b.username &&
   a.password == b.password &&
@@ -53,13 +51,13 @@ function ==(a::URI, b::URI)
   a.fragment == b.fragment
 end
 
-function show(io::IO, u::URI)
+function Base.show(io::IO, u::URI)
   write(io, "uri\"")
   print(io, u)
   write(io, '"')
 end
 
-function print(io::IO, u::URI)
+function Base.print(io::IO, u::URI)
   isempty(u.schema) || write(io, u.schema, ':')
   isempty(u.username * u.host) || write(io,  "//")
   if !isempty(u.username)
@@ -83,7 +81,7 @@ const uses_fragment = ["hdfs", "ftp", "hdl", "http", "gopher", "news", "nntp", "
 ##
 # Validate known URI formats
 #
-function isvalid(uri::URI)
+function Base.isvalid(uri::URI)
   s = uri.schema
   @assert !isempty(s) "can not validate a relative URI"
   s in non_hierarchical && search(uri.path, '/', 1) > 1 && return false # path hierarchy not allowed
