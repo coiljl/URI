@@ -94,6 +94,4 @@ end
 ##
 # Enables shorthand syntax `uri"mailto:pretty@julia"`
 #
-macro uri_str(str::String)
-  URI(str)
-end
+macro uri_str(str::String) URI(str) end
