@@ -1,10 +1,10 @@
-@require "URIParser/src/parser.jl" URI => A
-@require "URI" URI => B
+@require "." URI => B
+import URIParser.URI
 using Benchmark
 
 const uri = "http://test.com/a#frag"
 
-show(compare([
-  JuliaWeb() = A(uri),
-  Jkroso() = B(uri),
-], 30))
+compare([
+  JuliaWeb() = URI(uri),
+  coiljl() = B(uri),
+], 100) |> println

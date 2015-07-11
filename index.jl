@@ -1,4 +1,4 @@
-@require "querystring" Query
+@require "coiljl/querystring" Query
 
 const regex = r"""
   (?:([A-Za-z-+\.]+):)? # protocol
@@ -30,14 +30,14 @@ end
 URI(uri::String) = begin
   m = match(regex, uri).captures
   URI(
-    m[1] === nothing ? "" : m[1],             # schema
-    m[2] === nothing ? "" : m[2],             # username
-    m[3] === nothing ? "" : m[3],             # password
-    m[4] === nothing ? "" : m[4],             # host
-    m[5] === nothing ? 0 : uint16(m[5]),      # port
-    m[6] === nothing ? "" : m[6],             # path
-    m[7] === nothing ? Query() : Query(m[7]), # query
-    m[8] === nothing ? "" : m[8])             # fragment
+    m[1] ≡ nothing ? "" : m[1],             # schema
+    m[2] ≡ nothing ? "" : m[2],             # username
+    m[3] ≡ nothing ? "" : m[3],             # password
+    m[4] ≡ nothing ? "" : m[4],             # host
+    m[5] ≡ nothing ? 0 : uint16(m[5]),      # port
+    m[6] ≡ nothing ? "" : m[6],             # path
+    m[7] ≡ nothing ? Query() : Query(m[7]), # query
+    m[8] ≡ nothing ? "" : m[8])             # fragment
 end
 
 function Base.(:(==))(a::URI, b::URI)

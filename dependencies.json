@@ -1,9 +1,0 @@
-{
-  "production": {
-    "querystring": "http://github.com/jkroso/querystring/tarball/0.0.1"
-  },
-  "development": {
-    "URIParser": "http://github.com/JuliaWeb/URIParser.jl/tarball/v0.0.3",
-    "jest": "http://github.com/jkroso/jest/tarball/0.0.2"
-  }
-}
