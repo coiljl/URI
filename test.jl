@@ -31,4 +31,4 @@ end
 
 @test uri"//google.com" == URI("", "", "", "google.com", 0, "", Query(), "")
 
-@test uri"?a=1&b=2".query == Query({"a"=>"1","b"=>"2"})
+@test uri"?a=1&b=2".query == Query(Dict("a"=>"1","b"=>"2"))

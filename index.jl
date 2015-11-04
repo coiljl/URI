@@ -1,6 +1,6 @@
 @require "coiljl/querystring" Query
 
-const regex = r"""
+const regex = r"
   (?:([A-Za-z-+\.]+):)? # protocol
   (?://
     (?:
@@ -14,27 +14,27 @@ const regex = r"""
   ([^?\#]*)?            # path
   (?:\?([^\#]*))?       # query
   (?:\#(.+))?           # fragment
-"""x
+"x
 
 type URI
-  schema::String
-  username::String
-  password::String
-  host::String
+  schema::AbstractString
+  username::AbstractString
+  password::AbstractString
+  host::AbstractString
   port::Integer
-  path::String
+  path::AbstractString
   query::Query
-  fragment::String
+  fragment::AbstractString
 end
 
-URI(uri::String) = begin
+URI(uri::AbstractString) = begin
   m = match(regex, uri).captures
   URI(
     m[1] ≡ nothing ? "" : m[1],             # schema
     m[2] ≡ nothing ? "" : m[2],             # username
     m[3] ≡ nothing ? "" : m[3],             # password
     m[4] ≡ nothing ? "" : m[4],             # host
-    m[5] ≡ nothing ? 0 : uint16(m[5]),      # port
+    m[5] ≡ nothing ? 0 : parse(UInt16,m[5]),# port
     m[6] ≡ nothing ? "" : m[6],             # path
     m[7] ≡ nothing ? Query() : Query(m[7]), # query
     m[8] ≡ nothing ? "" : m[8])             # fragment
@@ -94,4 +94,4 @@ end
 ##
 # Enables shorthand syntax `uri"mailto:pretty@julia"`
 #
-macro uri_str(str::String) URI(str) end
+macro uri_str(str) URI(str) end
