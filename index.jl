@@ -16,8 +16,7 @@ const regex = r"
   (?:\#(.+))?           # fragment
 "x
 
-type URI
-  schema::AbstractString
+type URI{protocol}
   username::AbstractString
   password::AbstractString
   host::AbstractString
@@ -29,8 +28,7 @@ end
 
 URI(uri::AbstractString) = begin
   m = match(regex, uri).captures
-  URI(
-    m[1] ≡ nothing ? "" : m[1],             # schema
+  URI{symbol(m[1] ≡ nothing ? "" : m[1])}(
     m[2] ≡ nothing ? "" : m[2],             # username
     m[3] ≡ nothing ? "" : m[3],             # password
     m[4] ≡ nothing ? "" : m[4],             # host
@@ -40,8 +38,7 @@ URI(uri::AbstractString) = begin
     m[8] ≡ nothing ? "" : m[8])             # fragment
 end
 
-function Base.(:(==))(a::URI, b::URI)
-  a.schema == b.schema &&
+function Base.(:(==)){protocol}(a::URI{protocol}, b::URI{protocol})
   a.username == b.username &&
   a.password == b.password &&
   a.host == b.host &&
@@ -57,8 +54,8 @@ function Base.show(io::IO, u::URI)
   write(io, '"')
 end
 
-function Base.print(io::IO, u::URI)
-  isempty(u.schema) || write(io, u.schema, ':')
+function Base.print{protocol}(io::IO, u::URI{protocol})
+  protocol == symbol("") || write(io, protocol, ':')
   isempty(u.username * u.host) || write(io,  "//")
   if !isempty(u.username)
     write(io, u.username)
@@ -81,9 +78,9 @@ const uses_fragment = ["hdfs", "ftp", "hdl", "http", "gopher", "news", "nntp", "
 ##
 # Validate known URI formats
 #
-function Base.isvalid(uri::URI)
-  s = uri.schema
-  @assert !isempty(s) "can not validate a relative URI"
+function Base.isvalid{protocol}(uri::URI{protocol})
+  @assert protocol != symbol("") "can not validate a relative URI"
+  s = string(protocol)
   s in non_hierarchical && search(uri.path, '/', 1) > 1 && return false # path hierarchy not allowed
   s in uses_query || isempty(uri.query) || return false                 # query component not allowed
   s in uses_fragment || isempty(uri.fragment) || return false           # fragment identifier component not allowed

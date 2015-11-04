@@ -17,18 +17,18 @@ for url in [
   "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
 ]
   u = URI(url)
-  @test string(u) == url
-  @test isvalid(u)
+  string(u) == url
+  @assert isvalid(u) "$url"
 end
 
 @test ==(URI("hdfs://user:password@hdfshost:9000/root/folder/file.csv"),
-         URI("hdfs", "user", "password", "hdfshost", 9000, "/root/folder/file.csv", Query(), ""))
+         URI{:hdfs}("user", "password", "hdfshost", 9000, "/root/folder/file.csv", Query(), ""))
 
 @test !isvalid(URI("file:///path/to/file/with?should=work#fine"))
 @test  isvalid(URI("file:///path/to/file/with%3fshould%3dwork%23fine"))
 
-@test URI("//google.com") == URI("", "", "", "google.com", 0, "", Query(), "")
+@test URI("//google.com") == URI{symbol("")}("", "", "google.com", 0, "", Query(), "")
 
-@test uri"//google.com" == URI("", "", "", "google.com", 0, "", Query(), "")
+@test uri"//google.com" == URI("//google.com")
 
 @test uri"?a=1&b=2".query == Query(Dict("a"=>"1","b"=>"2"))
