@@ -1,8 +1,4 @@
-dependencies: index.jl
-	@kip $<
-	@ln -snf ../.. $@/coiljl/URI
-
-test: dependencies
+test:
 	@jest test.jl
 
 .PHONY: test

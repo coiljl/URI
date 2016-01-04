@@ -1,4 +1,4 @@
-@require "coiljl/querystring" Query
+@require "github.com/coiljl/querystring" Query
 
 const regex = r"
   (?:([A-Za-z-+\.]+):)? # protocol
@@ -16,7 +16,7 @@ const regex = r"
   (?:\#(.+))?           # fragment
 "x
 
-type URI{protocol}
+immutable URI{protocol}
   username::AbstractString
   password::AbstractString
   host::AbstractString
