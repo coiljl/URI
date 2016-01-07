@@ -116,3 +116,8 @@ end
 Enables shorthand syntax `uri"mailto:pretty@julia"`
 """
 macro uri_str(str) URI(str) end
+
+"""
+Get the protocol of a `URI`
+"""
+protocol{x}(uri::URI{x}) = x
