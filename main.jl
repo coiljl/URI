@@ -36,7 +36,7 @@ URI(uri::AbstractString) = begin
     m[3] ≡ nothing ? "" : m[3],             # password
     m[4] ≡ nothing ? "" : m[4],             # host
     m[5] ≡ nothing ? 0 : parse(UInt16,m[5]),# port
-    m[6] ≡ nothing ? "" : m[6],             # path
+    m[6],                                   # path
     m[7] ≡ nothing ? Query() : Query(m[7]), # query
     m[8] ≡ nothing ? "" : m[8])             # fragment
 end
@@ -51,7 +51,7 @@ URI(uri::AbstractString, defaults::Dict) = begin
     m[3] ≡ nothing ? get(defaults, :password, "") : m[3],
     m[4] ≡ nothing ? get(defaults, :host, "") : m[4],
     m[5] ≡ nothing ? get(defaults, :port, 0) : parse(UInt16,m[5]),
-    m[6] ≡ nothing ? get(defaults, :path, "") : m[6],
+    m[6] == "" ? get(defaults, :path, "") : m[6],
     m[7] ≡ nothing ? get(defaults, :query, Query()) : Query(m[7]),
     m[8] ≡ nothing ? get(defaults, :fragment, "") : m[8])
 end
