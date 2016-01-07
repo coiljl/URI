@@ -26,6 +26,9 @@ immutable URI{protocol}
   fragment::AbstractString
 end
 
+"""
+Parse a URI from a String
+"""
 URI(uri::AbstractString) = begin
   m = match(regex, uri).captures
   URI{symbol(m[1] ≡ nothing ? "" : m[1])}(
@@ -37,6 +40,27 @@ URI(uri::AbstractString) = begin
     m[7] ≡ nothing ? Query() : Query(m[7]), # query
     m[8] ≡ nothing ? "" : m[8])             # fragment
 end
+
+"""
+Create a URI based of of `uri` but some fields modified
+"""
+URI{default_protocol}(uri::URI{default_protocol};
+                      protocol=nothing,
+                      username=nothing,
+                      password=nothing,
+                      host=nothing,
+                      port=nothing,
+                      path=nothing,
+                      query=nothing,
+                      fragment=nothing) =
+  URI{protocol == nothing ? default_protocol : symbol(protocol)}(
+    username == nothing ? uri.username : username,
+    password == nothing ? uri.password : password,
+    host == nothing ? uri.host : host,
+    port == nothing ? uri.port : port,
+    path == nothing ? uri.path : path,
+    query == nothing ? uri.query : query,
+    fragment == nothing ? uri.fragment : fragment)
 
 function Base.(:(==)){protocol}(a::URI{protocol}, b::URI{protocol})
   a.username == b.username &&
@@ -88,7 +112,7 @@ function Base.isvalid{protocol}(uri::URI{protocol})
   isempty(uri.host) && uri.port == 0  && isempty(uri.username)          # authority component not allowed
 end
 
-##
-# Enables shorthand syntax `uri"mailto:pretty@julia"`
-#
+"""
+Enables shorthand syntax `uri"mailto:pretty@julia"`
+"""
 macro uri_str(str) URI(str) end
