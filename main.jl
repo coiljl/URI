@@ -9,7 +9,7 @@ const regex = r"
     @
   )?
   ([\w.-]+)?            # host
-  (?::(\d+))?           # port
+  (?::(\d{1,5}))?       # port
   ([^?\#]*)?            # path
   (?:\?([^\#]*))?       # query
   (?:\#(.+))?           # fragment
@@ -19,7 +19,7 @@ immutable URI{protocol}
   username::AbstractString
   password::AbstractString
   host::AbstractString
-  port::Integer
+  port::UInt16
   path::AbstractString
   query::Query
   fragment::AbstractString
