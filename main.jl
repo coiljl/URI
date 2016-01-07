@@ -42,6 +42,21 @@ URI(uri::AbstractString) = begin
 end
 
 """
+Parse a URI from a String while specifying the default value of each field
+"""
+URI(uri::AbstractString, defaults::Dict) = begin
+  m = match(regex, uri).captures
+  URI{symbol(m[1] ≡ nothing ? get(defaults, :protocol, "") : m[1])}(
+    m[2] ≡ nothing ? get(defaults, :username, "") : m[2],
+    m[3] ≡ nothing ? get(defaults, :password, "") : m[3],
+    m[4] ≡ nothing ? get(defaults, :host, "") : m[4],
+    m[5] ≡ nothing ? get(defaults, :port, 0) : parse(UInt16,m[5]),
+    m[6] ≡ nothing ? get(defaults, :path, "") : m[6],
+    m[7] ≡ nothing ? get(defaults, :query, Query()) : Query(m[7]),
+    m[8] ≡ nothing ? get(defaults, :fragment, "") : m[8])
+end
+
+"""
 Create a URI based of of `uri` but some fields modified
 """
 URI{default_protocol}(uri::URI{default_protocol};
