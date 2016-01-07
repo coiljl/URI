@@ -2,15 +2,14 @@
 
 const regex = r"
   (?:([A-Za-z-+\.]+):)? # protocol
-  (?://
-    (?:
-      (\w+)             # username
-      (?::(\w+))?       # password
-      @
-    )?
-    ([^:/]+)?           # host
-    (?::(\d+))?         # port
+  (?://)?
+  (?:
+    ([\w.]+)            # username
+    (?::(\w+))?         # password
+    @
   )?
+  ([\w.-]+)?            # host
+  (?::(\d+))?           # port
   ([^?\#]*)?            # path
   (?:\?([^\#]*))?       # query
   (?:\#(.+))?           # fragment
@@ -95,7 +94,7 @@ end
 
 function Base.print{protocol}(io::IO, u::URI{protocol})
   protocol == symbol("") || write(io, protocol, ':')
-  isempty(u.username * u.host) || write(io,  "//")
+  string(protocol) in non_hierarchical || write(io,  "//")
   if !isempty(u.username)
     write(io, u.username)
     isempty(u.password) || write(io, ':', u.password)
@@ -108,7 +107,7 @@ function Base.print{protocol}(io::IO, u::URI{protocol})
   isempty(u.fragment) || write(io, '#', u.fragment)
 end
 
-const uses_authority = ["hdfs", "ftp", "http", "gopher", "nntp", "telnet", "imap", "wais", "file", "mms", "https", "shttp", "snews", "prospero", "rtsp", "rtspu", "rsync", "svn", "svn+ssh", "sftp" ,"nfs", "git", "git+ssh", "ldap"]
+const uses_authority = ["hdfs", "ftp", "http", "gopher", "nntp", "telnet", "imap", "wais", "file", "mms", "https", "shttp", "snews", "prospero", "rtsp", "rtspu", "rsync", "svn", "svn+ssh", "sftp" ,"nfs", "git", "git+ssh", "ldap", "mailto"]
 const uses_params = ["ftp", "hdl", "prospero", "http", "imap", "https", "shttp", "rtsp", "rtspu", "sip", "sips", "mms", "sftp", "tel"]
 const non_hierarchical = ["gopher", "hdl", "mailto", "news", "telnet", "wais", "imap", "snews", "sip", "sips"]
 const uses_query = ["http", "wais", "imap", "https", "shttp", "mms", "gopher", "rtsp", "rtspu", "sip", "sips", "ldap"]
@@ -120,11 +119,11 @@ const uses_fragment = ["hdfs", "ftp", "hdl", "http", "gopher", "news", "nntp", "
 function Base.isvalid{protocol}(uri::URI{protocol})
   @assert protocol != symbol("") "can not validate a relative URI"
   s = string(protocol)
-  s in non_hierarchical && search(uri.path, '/', 1) > 1 && return false # path hierarchy not allowed
-  s in uses_query || isempty(uri.query) || return false                 # query component not allowed
-  s in uses_fragment || isempty(uri.fragment) || return false           # fragment identifier component not allowed
+  s in non_hierarchical && search(uri.path, '/') > 0 && return false # path hierarchy not allowed
+  s in uses_query || isempty(uri.query) || return false              # query component not allowed
+  s in uses_fragment || isempty(uri.fragment) || return false        # fragment identifier component not allowed
   s in uses_authority && return true
-  isempty(uri.host) && uri.port == 0  && isempty(uri.username)          # authority component not allowed
+  return isempty(uri.username) && isempty(uri.password)              # authority component not allowed
 end
 
 """

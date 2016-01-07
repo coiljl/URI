@@ -13,7 +13,7 @@ for url in [
   "mailto:John.Doe@example.com",
   "news:comp.infosystems.www.servers.unix",
   "tel:+1-816-555-1212",
-  "telnet://192.0.2.16:80/",
+  "telnet://192.0.2.16:80",
   "urn:oasis:names:specification:docbook:dtd:xml:4.1.2"
 ]
   u = URI(url)
