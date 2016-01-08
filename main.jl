@@ -1,5 +1,3 @@
-@require "github.com/coiljl/querystring" Query
-
 const regex = r"
   (?:([A-Za-z-+\.]+):)? # protocol
   (?://)?
@@ -14,6 +12,8 @@ const regex = r"
   (?:\?([^\#]*))?       # query
   (?:\#(.+))?           # fragment
 "x
+
+typealias Query Dict{AbstractString,AbstractString}
 
 immutable URI{protocol}
   username::AbstractString
@@ -36,7 +36,7 @@ URI(uri::AbstractString) = begin
     m[4] ≡ nothing ? "" : m[4],             # host
     m[5] ≡ nothing ? 0 : parse(UInt16,m[5]),# port
     m[6],                                   # path
-    m[7] ≡ nothing ? Query() : Query(m[7]), # query
+    m[7] ≡ nothing ? Query() : decode_query(m[7]), # query
     m[8] ≡ nothing ? "" : m[8])             # fragment
 end
 
@@ -51,7 +51,7 @@ URI(uri::AbstractString, defaults::Dict) = begin
     m[4] ≡ nothing ? get(defaults, :host, "") : m[4],
     m[5] ≡ nothing ? get(defaults, :port, 0) : parse(UInt16,m[5]),
     m[6] == "" ? get(defaults, :path, "") : m[6],
-    m[7] ≡ nothing ? get(defaults, :query, Query()) : Query(m[7]),
+    m[7] ≡ nothing ? get(defaults, :query, Query()) : decode_query(m[7]),
     m[8] ≡ nothing ? get(defaults, :fragment, "") : m[8])
 end
 
@@ -68,13 +68,13 @@ URI{default_protocol}(uri::URI{default_protocol};
                       query=nothing,
                       fragment=nothing) =
   URI{protocol == nothing ? default_protocol : symbol(protocol)}(
-    username == nothing ? uri.username : username,
-    password == nothing ? uri.password : password,
-    host == nothing ? uri.host : host,
-    port == nothing ? uri.port : port,
-    path == nothing ? uri.path : path,
-    query == nothing ? uri.query : query,
-    fragment == nothing ? uri.fragment : fragment)
+    username ≡ nothing ? uri.username : username,
+    password ≡ nothing ? uri.password : password,
+    host ≡ nothing ? uri.host : host,
+    port ≡ nothing ? uri.port : port,
+    path ≡ nothing ? uri.path : path,
+    query ≡ nothing ? uri.query : query,
+    fragment ≡ nothing ? uri.fragment : fragment)
 
 function Base.(:(==)){protocol}(a::URI{protocol}, b::URI{protocol})
   a.username == b.username &&
@@ -103,7 +103,8 @@ function Base.print{protocol}(io::IO, u::URI{protocol})
   write(io, u.host)
   u.port == 0 || write(io, ':', string(u.port))
   write(io, u.path)
-  write(io, reduce((s,a)->"$s$(a[1])=$(a[2])&", "?", u.query)[1:end-1])
+  query = encode_query(u.query)
+  isempty(query) || write(io, '?', query)
   isempty(u.fragment) || write(io, '#', u.fragment)
 end
 
@@ -135,3 +136,54 @@ macro uri_str(str) URI(str) end
 Get the protocol of a `URI`
 """
 protocol{x}(uri::URI{x}) = x
+
+"""
+Parse a query string
+"""
+function decode_query(str::AbstractString)
+  query = Query()
+  for elem in split(str, '&'; keep=false)
+    key, value = split(elem, "=")
+    query[decode(key)] = decode(value)
+  end
+  query
+end
+
+const hex_regex = r"%[0-9a-f]{2}"i
+
+"""
+Replace hex string excape codes to make the uri readable again
+"""
+function decode(str::AbstractString)
+  replace(str, hex_regex, c -> Char(parse(Int, c[2:3], 16)))
+end
+
+"""
+Serialize a `Dict` into a query string
+"""
+function encode_query(data::Dict)
+  buffer = IOBuffer()
+  for (key, value) in data
+    isempty(buffer.data) || write(buffer, '&')
+    write(buffer, encode_component(key), '=', encode_component(value))
+  end
+  takebuf_string(buffer)
+end
+
+const control = (map(UInt8, 0:parse(Int,"1f",16)) |> collect |> ascii) * "\x7f"
+const blacklist = Set("%<>\",;+\$![]'* {}|\\^`" * control)
+const component_blacklist = Set("/=?#:@&")
+
+encode_match(substr) = string('%', uppercase(hex(substr[1], 2)))
+
+"""
+Encode a uri path for use in contexts where its internal syntax is likely to cause
+problems for parsers. Like in HTTP requests for example.
+"""
+encode(str::AbstractString) = replace(str, blacklist, encode_match)
+
+"""
+Encode a string for use within a uri
+"""
+encode_component(value) = encode_component(string(value))
+encode_component(str::AbstractString) = replace(str, component_blacklist, encode_match)
