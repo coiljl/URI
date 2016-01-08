@@ -150,13 +150,12 @@ function decode_query(str::AbstractString)
 end
 
 const hex_regex = r"%[0-9a-f]{2}"i
+decode_match(hex) = Char(parse(Int, hex[2:3], 16))
 
 """
 Replace hex string excape codes to make the uri readable again
 """
-function decode(str::AbstractString)
-  replace(str, hex_regex, c -> Char(parse(Int, c[2:3], 16)))
-end
+decode(str::AbstractString) = replace(str, hex_regex, decode_match)
 
 """
 Serialize a `Dict` into a query string
@@ -192,3 +191,13 @@ query = Dict(:location => encode_component("http://httpbin.org"))
 """
 encode_component(value) = encode_component(string(value))
 encode_component(str::AbstractString) = replace(str, component_blacklist, encode_match)
+
+resolve(from::URI, to::URI) =
+  if isempty(to.host)
+    URI(to, protocol=protocol(to) == symbol("") ? protocol(from) : protocol(to),
+            host=from.host)
+  else
+    (protocol(to) == symbol("")
+      ? URI(to, protocol=protocol(from))
+      : to)
+  end

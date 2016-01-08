@@ -1,4 +1,4 @@
-@require "." URI @uri_str Query encode encode_component decode_query encode_query
+@require "." URI @uri_str Query encode encode_component decode_query encode_query resolve
 
 for url in [
   "hdfs://user:password@hdfshost:9000/root/folder/file.csv#frag",
@@ -37,3 +37,4 @@ end
 @test encode_query(Dict("a"=>"1","b"=>"2")) == "b=2&a=1"
 @test encode("http://a.b/>=1 <2.3") == "http://a.b/%3E=1%20%3C2.3"
 @test encode_component("http://a.b/>=1 <2.3") == "http%3A%2F%2Fa.b%2F>%3D1 <2.3"
+@test resolve(uri"http://google.com/a", uri"/b") == uri"http://google.com/b"
