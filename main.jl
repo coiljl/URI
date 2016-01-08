@@ -177,13 +177,18 @@ const component_blacklist = Set("/=?#:@&")
 encode_match(substr) = string('%', uppercase(hex(substr[1], 2)))
 
 """
-Encode a uri path for use in contexts where its internal syntax is likely to cause
-problems for parsers. Like in HTTP requests for example.
+Hex encode characters which might be dangerous in certain contexts without
+obfuscating it so much that it loses its structure as a uri string
 """
 encode(str::AbstractString) = replace(str, blacklist, encode_match)
 
 """
-Encode a string for use within a uri
+Hex encode the structural delimeters used in `str` so that `str` can be used
+as a value anywhere within a uri
+
+```julia
+query = Dict(:location => encode_component("http://httpbin.org"))
+```
 """
 encode_component(value) = encode_component(string(value))
 encode_component(str::AbstractString) = replace(str, component_blacklist, encode_match)
