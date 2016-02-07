@@ -1,11 +1,11 @@
 @require "." URI @uri_str Query encode encode_component decode_query encode_query resolve
 
 for url in [
-  "hdfs://user:password@hdfshost:9000/root/folder/file.csv#frag",
-  "https://user:password@httphost:9000/path1/path2;paramstring?q=a&p=r#frag",
-  "https://user:password@httphost:9000/path1/path2?q=a&p=r#frag",
-  "https://user:password@httphost:9000/path1/path2;paramstring#frag",
-  "https://user:password@httphost:9000/path1/path2#frag",
+  "hdfs://user:password@hdfs.host:9000/root/folder/file.csv#frag",
+  "https://user:password@http.host:9000/path1/path2;paramstring?q=a&p=r#frag",
+  "https://user:password@http.host:9000/path1/path2?q=a&p=r#frag",
+  "https://user:password@http.host:9000/path1/path2;paramstring#frag",
+  "https://user:password@http.host:9000/path1/path2#frag",
   "file:/path/to/file/with%3fshould%3dwork%23fine",
   "ftp://ftp.is.co.za/rfc/rfc1808.txt",
   "http://www.ietf.org/rfc/rfc2396.txt",
@@ -21,8 +21,8 @@ for url in [
   @assert isvalid(u) "$url"
 end
 
-@test ==(URI("hdfs://user:password@hdfshost:9000/root/folder/file.csv"),
-         URI{:hdfs}("user", "password", "hdfshost", 9000, "/root/folder/file.csv", Query(), ""))
+@test ==(URI("hdfs://user:password@hdfs.host:9000/root/folder/file.csv"),
+         URI{:hdfs}("user", "password", "hdfs.host", 9000, "/root/folder/file.csv", Query(), ""))
 
 @test !isvalid(URI("file:///path/to/file/with?should=work#fine"))
 @test  isvalid(URI("file:///path/to/file/with%3fshould%3dwork%23fine"))

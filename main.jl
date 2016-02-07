@@ -1,16 +1,16 @@
 const regex = r"
-  (?:([A-Za-z-+\.]+):)? # protocol
+  (?:([A-Za-z-+\.]+):)?  # protocol
   (?://)?
   (?:
-    ([\w.]+)            # username
-    (?::(\w+))?         # password
+    ([\w.]+)             # username
+    (?::(\w+))?          # password
     @
   )?
-  ([\w.-]+)?            # host
-  (?::(\d{1,5}))?       # port
-  ([^?\#]*)?            # path
-  (?:\?([^\#]*))?       # query
-  (?:\#(.+))?           # fragment
+  ([\w-]+(?:\.[\w-]+)+)? # host
+  (?::(\d{1,5}))?        # port
+  ([^?\#]*)?             # path
+  (?:\?([^\#]*))?        # query
+  (?:\#(.+))?            # fragment
 "x
 
 typealias Query Dict{AbstractString,AbstractString}
