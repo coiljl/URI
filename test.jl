@@ -31,6 +31,8 @@ end
 @test uri"//google.com" == URI("//google.com")
 @test uri"?a=1&b=2".query == Query(Dict("a"=>"1","b"=>"2"))
 
+@test URI("file:/a%20b").path == "/a b"
+
 @test decode_query("a=1") == Dict("a"=>"1")
 @test decode_query("a=1&b=2") == Dict("a"=>"1","b"=>"2")
 @test decode_query("a%2Fb=1%3C2") == Dict("a/b"=>"1<2")

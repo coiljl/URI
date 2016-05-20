@@ -35,7 +35,7 @@ URI(uri::AbstractString) = begin
     m[3] ≡ nothing ? "" : m[3],             # password
     m[4] ≡ nothing ? "" : m[4],             # host
     m[5] ≡ nothing ? 0 : parse(UInt16,m[5]),# port
-    m[6],                                   # path
+    decode(m[6]),                           # path
     m[7] ≡ nothing ? Query() : decode_query(m[7]), # query
     m[8] ≡ nothing ? "" : m[8])             # fragment
 end
