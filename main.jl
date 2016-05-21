@@ -93,8 +93,10 @@ function Base.show(io::IO, u::URI)
 end
 
 function Base.print{protocol}(io::IO, u::URI{protocol})
-  protocol == symbol("") || write(io, protocol, ':')
-  string(protocol) in non_hierarchical || write(io,  "//")
+  if protocol != symbol("")
+    write(io, protocol, ':')
+    string(protocol) in non_hierarchical || write(io,  "//")
+  end
   if !isempty(u.username)
     write(io, u.username)
     isempty(u.password) || write(io, ':', u.password)
