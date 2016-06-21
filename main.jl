@@ -56,6 +56,21 @@ URI(uri::AbstractString, defaults::Dict) = begin
 end
 
 """
+Parse a URI from a String while defaulting to the values of an existing URI
+"""
+URI(uri::AbstractString, defaults::URI) = begin
+  m = match(regex, uri).captures
+  URI{symbol(m[1] ≡ nothing ? protocol(defaults) : m[1])}(
+    m[2] ≡ nothing ? defaults.username : m[2],
+    m[3] ≡ nothing ? defaults.password : m[3],
+    m[4] ≡ nothing ? defaults.host : m[4],
+    m[5] ≡ nothing ? defaults.port : parse(UInt16,m[5]),
+    m[6] == "" ? defaults.path : m[6],
+    m[7] ≡ nothing ? defaults.query : decode_query(m[7]),
+    m[8] ≡ nothing ? defaults.fragment : m[8])
+end
+
+"""
 Create a URI based of of `uri` but some fields modified
 """
 URI{default_protocol}(uri::URI{default_protocol};
@@ -193,13 +208,3 @@ query = Dict(:location => encode_component("http://httpbin.org"))
 """
 encode_component(value) = encode_component(string(value))
 encode_component(str::AbstractString) = replace(str, component_blacklist, encode_match)
-
-resolve(from::URI, to::URI) =
-  if isempty(to.host)
-    URI(to, protocol=protocol(to) == symbol("") ? protocol(from) : protocol(to),
-            host=from.host)
-  else
-    (protocol(to) == symbol("")
-      ? URI(to, protocol=protocol(from))
-      : to)
-  end
