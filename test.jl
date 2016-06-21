@@ -42,3 +42,4 @@ end
 @test encode("http://a.b/>=1 <2.3") == "http://a.b/%3E=1%20%3C2.3"
 @test encode_component("http://a.b/>=1 <2.3") == "http%3A%2F%2Fa.b%2F>%3D1 <2.3"
 @test URI("/b", uri"http://google.com:8000/a") == uri"http://google.com:8000/b"
+@test URI("http://localhost:8000/absolute-redirect/2", uri"http://localhost:8000/absolute-redirect/3") == uri"http://localhost:8000/absolute-redirect/2"
