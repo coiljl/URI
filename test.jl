@@ -27,7 +27,7 @@ end
 @test !isvalid(URI("file:///path/to/file/with?should=work#fine"))
 @test  isvalid(URI("file:///path/to/file/with%3fshould%3dwork%23fine"))
 
-@test URI("//google.com") == URI{symbol("")}("", "", "google.com", 0, "", Query(), "")
+@test URI("//google.com") == URI{Symbol("")}("", "", "google.com", 0, "", Query(), "")
 @test uri"//google.com" == URI("//google.com")
 @test uri"?a=1&b=2".query == Query(Dict("a"=>"1","b"=>"2"))
 

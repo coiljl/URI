@@ -30,7 +30,7 @@ Parse a URI from a String
 """
 URI(uri::AbstractString) = begin
   m = match(regex, uri).captures
-  URI{symbol(m[1] ≡ nothing ? "" : m[1])}(
+  URI{Symbol(m[1] ≡ nothing ? "" : m[1])}(
     m[2] ≡ nothing ? "" : m[2],             # username
     m[3] ≡ nothing ? "" : m[3],             # password
     m[4] ≡ nothing ? "" : m[4],             # host
@@ -45,7 +45,7 @@ Parse a URI from a String while specifying the default value of each field
 """
 URI(uri::AbstractString, defaults::Dict) = begin
   m = match(regex, uri).captures
-  URI{symbol(m[1] ≡ nothing ? get(defaults, :protocol, "") : m[1])}(
+  URI{Symbol(m[1] ≡ nothing ? get(defaults, :protocol, "") : m[1])}(
     m[2] ≡ nothing ? get(defaults, :username, "") : m[2],
     m[3] ≡ nothing ? get(defaults, :password, "") : m[3],
     m[4] ≡ nothing ? get(defaults, :host, "") : m[4],
@@ -60,7 +60,7 @@ Parse a URI from a String while defaulting to the values of an existing URI
 """
 URI(uri::AbstractString, defaults::URI) = begin
   m = match(regex, uri).captures
-  URI{symbol(m[1] ≡ nothing ? protocol(defaults) : m[1])}(
+  URI{Symbol(m[1] ≡ nothing ? protocol(defaults) : m[1])}(
     m[2] ≡ nothing ? defaults.username : m[2],
     m[3] ≡ nothing ? defaults.password : m[3],
     m[4] ≡ nothing ? defaults.host : m[4],
@@ -82,7 +82,7 @@ URI{default_protocol}(uri::URI{default_protocol};
                       path=nothing,
                       query=nothing,
                       fragment=nothing) =
-  URI{protocol == nothing ? default_protocol : symbol(protocol)}(
+  URI{protocol == nothing ? default_protocol : Symbol(protocol)}(
     username ≡ nothing ? uri.username : username,
     password ≡ nothing ? uri.password : password,
     host ≡ nothing ? uri.host : host,
@@ -91,7 +91,7 @@ URI{default_protocol}(uri::URI{default_protocol};
     query ≡ nothing ? uri.query : query,
     fragment ≡ nothing ? uri.fragment : fragment)
 
-function Base.(:(==)){protocol}(a::URI{protocol}, b::URI{protocol})
+function Base.:(==){protocol}(a::URI{protocol}, b::URI{protocol})
   a.username == b.username &&
   a.password == b.password &&
   a.host == b.host &&
@@ -108,7 +108,7 @@ function Base.show(io::IO, u::URI)
 end
 
 function Base.print{protocol}(io::IO, u::URI{protocol})
-  if protocol != symbol("")
+  if protocol != Symbol("")
     write(io, protocol, ':')
     string(protocol) in non_hierarchical || write(io,  "//")
   end
@@ -135,7 +135,7 @@ const uses_fragment = ["hdfs", "ftp", "hdl", "http", "gopher", "news", "nntp", "
 # Validate known URI formats
 #
 function Base.isvalid{protocol}(uri::URI{protocol})
-  @assert protocol != symbol("") "can not validate a relative URI"
+  @assert protocol != Symbol("") "can not validate a relative URI"
   s = string(protocol)
   s in non_hierarchical && search(uri.path, '/') > 0 && return false # path hierarchy not allowed
   s in uses_query || isempty(uri.query) || return false              # query component not allowed
@@ -186,7 +186,7 @@ function encode_query(data::Dict)
   takebuf_string(buffer)
 end
 
-const control = (map(UInt8, 0:parse(Int,"1f",16)) |> collect |> ascii) * "\x7f"
+const control = (map(UInt8, 0:parse(Int,"1f",16)) |> collect |> String) * "\x7f"
 const blacklist = Set("<>\",;+\$![]'* {}|\\^`" * control)
 const component_blacklist = Set("/=?#:@&")
 
