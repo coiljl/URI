@@ -13,9 +13,9 @@ const regex = r"
   (?:\#(.+))?            # fragment
 "x
 
-typealias Query Dict{AbstractString,AbstractString}
+const Query = Dict{AbstractString,AbstractString}
 
-immutable URI{protocol}
+struct URI{protocol}
   username::AbstractString
   password::AbstractString
   host::AbstractString
@@ -179,11 +179,16 @@ Serialize a `Dict` into a query string
 """
 function encode_query(data::Dict)
   buffer = IOBuffer()
+  isfirst = true
   for (key, value) in data
-    isempty(buffer.data) || write(buffer, '&')
+    if isfirst
+      isfirst = false
+    else
+      write(buffer, '&')
+    end
     write(buffer, encode_component(key), '=', encode_component(value))
   end
-  takebuf_string(buffer)
+  String(take!(buffer))
 end
 
 const control = (map(UInt8, 0:parse(Int,"1f",16)) |> collect |> String) * "\x7f"
