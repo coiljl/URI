@@ -178,17 +178,7 @@ decode(str::AbstractString) = replace(str, hex_regex, decode_match)
 Serialize a `Dict` into a query string
 """
 function encode_query(data::Dict)
-  buffer = IOBuffer()
-  isfirst = true
-  for (key, value) in data
-    if isfirst
-      isfirst = false
-    else
-      write(buffer, '&')
-    end
-    write(buffer, encode_component(key), '=', encode_component(value))
-  end
-  String(take!(buffer))
+  join([join(map(encode_component, kv), '=') for kv in data], '&')
 end
 
 const control = (map(UInt8, 0:parse(Int,"1f",16)) |> collect |> String) * "\x7f"
