@@ -70,27 +70,6 @@ URI(uri::AbstractString, defaults::URI) = begin
     m[8] ≡ nothing ? defaults.fragment : m[8])
 end
 
-"""
-Create a URI based of of `uri` but some fields modified
-"""
-URI{default_protocol}(uri::URI{default_protocol};
-                      protocol=nothing,
-                      username=nothing,
-                      password=nothing,
-                      host=nothing,
-                      port=nothing,
-                      path=nothing,
-                      query=nothing,
-                      fragment=nothing) =
-  URI{protocol == nothing ? default_protocol : Symbol(protocol)}(
-    username ≡ nothing ? uri.username : username,
-    password ≡ nothing ? uri.password : password,
-    host ≡ nothing ? uri.host : host,
-    port ≡ nothing ? uri.port : port,
-    path ≡ nothing ? uri.path : path,
-    query ≡ nothing ? uri.query : query,
-    fragment ≡ nothing ? uri.fragment : fragment)
-
 function Base.:(==){protocol}(a::URI{protocol}, b::URI{protocol})
   a.username == b.username &&
   a.password == b.password &&
