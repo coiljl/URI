@@ -162,7 +162,7 @@ end
 
 const control = (map(UInt8, 0:parse(Int,"1f",16)) |> collect |> String) * "\x7f"
 const blacklist = Set("<>\",;+\$![]'* {}|\\^`" * control)
-const component_blacklist = Set("/=?#:@&")
+const component_blacklist = Set("/=?#:@& ")
 
 encode_match(substr) = string('%', uppercase(hex(substr[1], 2)))
 
