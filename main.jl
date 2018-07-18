@@ -139,8 +139,10 @@ Parse a query string
 function decode_query(str::AbstractString)
   query = Query()
   for elem in split(str, '&'; keep=false)
-    key, value = split(elem, "=")
-    query[decode(key)] = decode(value)
+    parts = split(elem, "=")
+    key = decode(parts[1])
+    val = length(parts) == 2 ? decode(parts[2]) : ""
+    query[key] = val
   end
   query
 end
@@ -157,7 +159,9 @@ decode(str::AbstractString) = replace(str, hex_regex, decode_match)
 Serialize a `Dict` into a query string
 """
 function encode_query(data::Dict)
-  join([join(map(encode_component, kv), '=') for kv in data], '&')
+  parts = (isempty(v) ? encode_component(k) : "$(encode_component(k))=$(encode_component(v))"
+           for (k,v) in data)
+  join(parts, '&')
 end
 
 const control = (map(UInt8, 0:parse(Int,"1f",16)) |> collect |> String) * "\x7f"

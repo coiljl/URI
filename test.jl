@@ -34,12 +34,13 @@ end
 @test URI("file:/a%20b").path == "/a b"
 @test URI("/main.jl")|>string == "/main.jl"
 
-
+@test decode_query("a&b") == Dict("a"=>"", "b"=>"")
 @test decode_query("a=1") == Dict("a"=>"1")
 @test decode_query("a=1&b=2") == Dict("a"=>"1","b"=>"2")
 @test decode_query("a%2Fb=1%3C2") == Dict("a/b"=>"1<2")
 @test encode_query(Dict("a"=>"1","b"=>"2")) == "b=2&a=1"
+@test encode_query(Dict("a"=>"","b"=>"")) == "b&a"
 @test encode("http://a.b/>=1 <2.3") == "http://a.b/%3E=1%20%3C2.3"
-@test encode_component("http://a.b/>=1 <2.3") == "http%3A%2F%2Fa.b%2F>%3D1 <2.3"
+@test encode_component("http://a.b/>=1 <2.3") == "http%3A%2F%2Fa.b%2F>%3D1%20<2.3"
 @test URI("/b", uri"http://google.com:8000/a") == uri"http://google.com:8000/b"
 @test URI("http://localhost:8000/absolute-redirect/2", uri"http://localhost:8000/absolute-redirect/3") == uri"http://localhost:8000/absolute-redirect/2"
