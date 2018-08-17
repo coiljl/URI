@@ -70,7 +70,7 @@ URI(uri::AbstractString, defaults::URI) = begin
     m[8] ≡ nothing ? defaults.fragment : m[8])
 end
 
-function Base.:(==){protocol}(a::URI{protocol}, b::URI{protocol})
+function Base.:(==)(a::URI{protocol}, b::URI{protocol}) where protocol
   a.username == b.username &&
   a.password == b.password &&
   a.host == b.host &&
@@ -86,7 +86,7 @@ function Base.show(io::IO, u::URI)
   write(io, '"')
 end
 
-function Base.print{protocol}(io::IO, u::URI{protocol})
+function Base.print(io::IO, u::URI{protocol}) where protocol
   if protocol != Symbol("")
     write(io, protocol, ':')
     string(protocol) in non_hierarchical || write(io,  "//")
@@ -113,14 +113,14 @@ const uses_fragment = ["hdfs", "ftp", "hdl", "http", "gopher", "news", "nntp", "
 ##
 # Validate known URI formats
 #
-function Base.isvalid{protocol}(uri::URI{protocol})
+function Base.isvalid(uri::URI{protocol}) where protocol
   @assert protocol != Symbol("") "can not validate a relative URI"
   s = string(protocol)
-  s in non_hierarchical && search(uri.path, '/') > 0 && return false # path hierarchy not allowed
-  s in uses_query || isempty(uri.query) || return false              # query component not allowed
-  s in uses_fragment || isempty(uri.fragment) || return false        # fragment identifier component not allowed
+  s in non_hierarchical && occursin('/', uri.path) && return false # path hierarchy not allowed
+  s in uses_query || isempty(uri.query) || return false            # query component not allowed
+  s in uses_fragment || isempty(uri.fragment) || return false      # fragment identifier component not allowed
   s in uses_authority && return true
-  return isempty(uri.username) && isempty(uri.password)              # authority component not allowed
+  return isempty(uri.username) && isempty(uri.password)            # authority component not allowed
 end
 
 """
@@ -131,14 +131,14 @@ macro uri_str(str) URI(str) end
 """
 Get the protocol of a `URI`
 """
-protocol{x}(uri::URI{x}) = x
+protocol(uri::URI{x}) where x = x
 
 """
 Parse a query string
 """
 function decode_query(str::AbstractString)
   query = Query()
-  for elem in split(str, '&'; keep=false)
+  for elem in split(str, '&'; keepempty=false)
     parts = split(elem, "=")
     key = decode(parts[1])
     val = length(parts) == 2 ? decode(parts[2]) : ""
@@ -148,12 +148,12 @@ function decode_query(str::AbstractString)
 end
 
 const hex_regex = r"%[0-9a-f]{2}"i
-decode_match(hex) = Char(parse(Int, hex[2:3], 16))
+decode_match(hex) = Char(parse(Int, hex[2:3], base=16))
 
 """
 Replace hex string excape codes to make the uri readable again
 """
-decode(str::AbstractString) = replace(str, hex_regex, decode_match)
+decode(str::AbstractString) = replace(str, hex_regex=>decode_match)
 
 """
 Serialize a `Dict` into a query string
@@ -164,17 +164,17 @@ function encode_query(data::Dict)
   join(parts, '&')
 end
 
-const control = (map(UInt8, 0:parse(Int,"1f",16)) |> collect |> String) * "\x7f"
+const control = (map(UInt8, 0:parse(Int,"1f",base=16)) |> collect |> String) * "\x7f"
 const blacklist = Set("<>\",;+\$![]'* {}|\\^`" * control)
 const component_blacklist = Set("/=?#:@& ")
 
-encode_match(substr) = string('%', uppercase(hex(substr[1], 2)))
+encode_match(substr) = string('%', uppercase(string(UInt32(substr[1]), base=16, pad=2)))
 
 """
 Hex encode characters which might be dangerous in certain contexts without
 obfuscating it so much that it loses its structure as a uri string
 """
-encode(str::AbstractString) = replace(str, blacklist, encode_match)
+encode(str::AbstractString) = replace(str, blacklist=>encode_match)
 
 """
 Hex encode the structural delimeters used in `str` so that `str` can be used
@@ -185,4 +185,4 @@ query = Dict(:location => encode_component("http://httpbin.org"))
 ```
 """
 encode_component(value) = encode_component(string(value))
-encode_component(str::AbstractString) = replace(str, component_blacklist, encode_match)
+encode_component(str::AbstractString) = replace(str, component_blacklist=>encode_match)
